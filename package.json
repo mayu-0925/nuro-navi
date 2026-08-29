@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate": "tsx scripts/generate-article.ts"
+    "generate": "tsx scripts/generate-article.ts",
+    "rewrite": "tsx scripts/rewrite-articles.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

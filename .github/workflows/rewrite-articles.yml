@@ -1,0 +1,55 @@
+name: 記事リライト
+
+on:
+  schedule:
+    - cron: "0 1 * * 4"  # 毎週木曜 JST 10:00（UTC 01:00）
+  workflow_dispatch:
+
+jobs:
+  rewrite:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rewrite articles
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npx tsx scripts/rewrite-articles.ts --count 2
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add content/articles/
+          if git diff --staged --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git commit -m "refactor: 既存記事を最新プロンプトでリライト"
+
+          for i in 1 2 3; do
+            echo "--- push試行 $i/3 ---"
+            git push origin main && exit 0
+            echo "push失敗。リモートの変更を取り込んで再試行..."
+            git fetch origin main
+            git rebase origin/main
+            sleep 5
+          done
+          echo "3回リトライしましたが失敗しました"
+          exit 1
