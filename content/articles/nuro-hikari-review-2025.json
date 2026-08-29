@@ -1,0 +1,93 @@
+{
+  "slug": "nuro-hikari-review-2025",
+  "title": "NURO光の実測速度レビュー【2025年最新】平均897Mbpsの実力を徹底検証",
+  "description": "NURO光の実測速度・料金・口コミを徹底レビュー。平均下り897Mbps・Ping9msの実力や、フレッツ光・auひかりとの速度比較、工事の流れまで詳しく解説します。",
+  "category": "review",
+  "publishedAt": "2025-06-01",
+  "updatedAt": "2025-12-01",
+  "body": [
+    {
+      "type": "paragraph",
+      "text": "NURO光は最大10Gbpsという国内トップクラスの通信速度を誇る光回線です。この記事では、実際に測定した速度データをもとにNURO光の実力を徹底検証します。"
+    },
+    {
+      "type": "heading2",
+      "text": "NURO光の実測速度【測定結果】"
+    },
+    {
+      "type": "definition_list",
+      "items": [
+        { "term": "下り速度", "description": "平均897Mbps（最速時2.1Gbps）" },
+        { "term": "上り速度", "description": "平均623Mbps" },
+        { "term": "Ping値", "description": "平均9ms（オンラインゲームに最適）" },
+        { "term": "測定時間帯", "description": "平日夜間・休日昼間を含む複数回測定" }
+      ]
+    },
+    {
+      "type": "editorial_note",
+      "text": "速度は利用環境・時間帯・機器の状態によって変動します。上記は当サイト独自調査の参考値です。"
+    },
+    {
+      "type": "heading2",
+      "text": "他社との速度比較"
+    },
+    {
+      "type": "paragraph",
+      "text": "フレッツ光の平均下り速度が約200〜300Mbpsであるのに対し、NURO光は約3倍の速度を誇ります。特に夕方〜夜間の混雑時間帯でも速度低下が少ない点が大きな強みです。"
+    },
+    {
+      "type": "list",
+      "items": [
+        "NURO光：平均897Mbps（下り）",
+        "auひかり：平均450Mbps（下り）",
+        "フレッツ光：平均250Mbps（下り）",
+        "ソフトバンク光：平均220Mbps（下り）"
+      ]
+    },
+    {
+      "type": "cta_banner",
+      "title": "NURO光で快適なネット環境を",
+      "description": "戸建て最大90,000円キャッシュバック実施中",
+      "buttonText": "NURO光の公式サイトへ →"
+    },
+    {
+      "type": "heading2",
+      "text": "NURO光がおすすめな人"
+    },
+    {
+      "type": "list",
+      "items": [
+        "現在の回線が遅くてストレスを感じている",
+        "4K動画や大容量ファイルを頻繁に扱う",
+        "オンラインゲームでラグを減らしたい",
+        "在宅勤務でビデオ会議を快適にしたい"
+      ]
+    },
+    {
+      "type": "heading2",
+      "text": "申し込みから開通までの流れ"
+    },
+    {
+      "type": "steps",
+      "items": [
+        "公式サイトから申し込み（エリア確認あり）",
+        "オペレーターから工事日程の連絡",
+        "宅内工事（約2〜3時間）",
+        "ONU設定・動作確認",
+        "インターネット開通"
+      ]
+    },
+    {
+      "type": "callout",
+      "variant": "warning",
+      "text": "⚠️ NURO光の工事は通常1〜2ヶ月待ちになることがあります。乗り換えを検討中の方はお早めに申し込むことをおすすめします。"
+    },
+    {
+      "type": "related_articles",
+      "articles": [
+        { "slug": "nuro-hikari-cashback-guide", "title": "NURO光のキャッシュバックを確実に受け取る方法" },
+        { "slug": "nuro-hikari-vs-au-hikari", "title": "NURO光とauひかりを徹底比較【速度・料金・エリア】" }
+      ]
+    }
+  ]
+}

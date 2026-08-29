@@ -1,0 +1,62 @@
+name: 記事自動生成
+
+on:
+  schedule:
+    - cron: "0 21 * * 3" # 毎週水曜 朝6時（JST）
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate article
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npx tsx scripts/generate-article.ts
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          GENERATED=$(git status --short content/articles/ | awk '{print $2}')
+          if [ -z "$GENERATED" ]; then
+            echo "新しい記事はありません"
+            exit 0
+          fi
+
+          git add content/articles/
+          if git diff --staged --quiet; then
+            echo "新しい記事はありません"
+            exit 0
+          fi
+          ARTICLE_COUNT=$(ls content/articles/*.json | wc -l)
+          git commit -m "feat: 記事を自動生成（計${ARTICLE_COUNT}件）"
+
+          for i in 1 2 3; do
+            echo "--- push試行 $i/3 ---"
+            git push origin main && exit 0
+            echo "push失敗。リモートの変更を取り込んで再試行..."
+            git fetch origin main
+            git rebase origin/main
+            sleep 5
+          done
+          echo "3回リトライしましたが失敗しました"
+          exit 1

@@ -1,0 +1,37 @@
+RewriteEngine On
+
+# ============================================================
+# Next.js 静的アセット：一切リライトしない（最優先）
+# ============================================================
+RewriteRule ^_next/ - [L]
+RewriteRule \.(js|css|woff2?|ttf|otf|png|jpg|jpeg|gif|webp|svg|ico|json|xml|map|txt)$ - [L]
+
+# ============================================================
+# 全パターンを 1ステップ で https://www. + trailing slash へ
+# ============================================================
+
+# Case 1: non-www（http/https問わず）+ スラッシュなし → 1ステップで正規URL
+RewriteCond %{HTTP_HOST} ^net-choice\.jp$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !/$
+RewriteRule ^(.+)$ https://www.net-choice.jp/$1/ [R=301,L]
+
+# Case 2: non-www（http/https問わず）+ スラッシュあり → 1ステップでwwwへ
+RewriteCond %{HTTP_HOST} ^net-choice\.jp$ [NC]
+RewriteRule ^ https://www.net-choice.jp%{REQUEST_URI} [R=301,L]
+
+# Case 3: http + www + スラッシュなし → 1ステップで正規URL
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} ^www\.net-choice\.jp$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !/$
+RewriteRule ^(.+)$ https://www.net-choice.jp/$1/ [R=301,L]
+
+# Case 4: http + www + スラッシュあり → 1ステップでhttpsへ
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# Case 5: https + www + スラッシュなし（残る唯一のケース）
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !/$
+RewriteRule ^(.+)$ %{REQUEST_URI}/ [R=301,L]
