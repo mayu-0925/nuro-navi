@@ -29,6 +29,7 @@ jobs:
       - name: Generate article
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_AI_STUDIO_API_KEY: ${{ secrets.GOOGLE_AI_STUDIO_API_KEY }}
         run: npx tsx scripts/generate-article.ts
 
       - name: Commit and push
@@ -43,6 +44,7 @@ jobs:
           fi
 
           git add content/articles/
+          git add public/thumbnails/ 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "新しい記事はありません"
             exit 0

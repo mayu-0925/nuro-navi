@@ -4,18 +4,22 @@
  * Phase 1 (Keyword Agent) : 既存記事を把握し、未開拓テーマ・キーワードを選定
  * Phase 2 (Outline Agent) : 選定キーワードをもとに詳細な記事構成を設計
  * Phase 3 (Writer Agent)  : 構成に従い、高品質な記事本文 JSON を生成
+ * Phase 4 (Image Agent)   : Imagen でサムネイル画像を生成・保存
  *
  * 使い方: npx tsx scripts/generate-article.ts
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
 import path from "path";
 import { topics } from "./topics";
-import { editorialData, AFFILIATE_URL } from "../lib/data";
+import { editorialData } from "../lib/data";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const genai = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_STUDIO_API_KEY ?? "" });
 const ARTICLES_DIR = path.join(process.cwd(), "content/articles");
+const THUMBNAILS_DIR = path.join(process.cwd(), "public/thumbnails");
 
 // ----------------------------------------------------------------
 // 既存記事の読み込み
@@ -398,6 +402,96 @@ ${existingArticles.slice(0, 30).map((a) => `- slug: "${a.slug}", title: "${a.tit
 }
 
 // ----------------------------------------------------------------
+// Phase 4: サムネイル画像生成（Imagen）
+// ----------------------------------------------------------------
+async function phase4GenerateThumbnail(
+  title: string,
+  category: string,
+  slug: string
+): Promise<string | null> {
+  if (!process.env.GOOGLE_AI_STUDIO_API_KEY) {
+    console.log("⏭️  Phase 4: GOOGLE_AI_STUDIO_API_KEY 未設定のためスキップ");
+    return null;
+  }
+  console.log("🖼️  Phase 4: サムネイル画像生成中（Imagen）...");
+
+  const categoryThemes: Record<string, string[]> = {
+    review: [
+      "five stars rating badge with fiber optic cable glowing behind it, orange and slate accents",
+      "magnifying glass zooming into a wifi signal with checkmarks, orange and white accents",
+      "clipboard with speed test results and sparkles, slate and orange accents",
+      "speedometer gauge at maximum with lightning bolt, orange and dark blue accents",
+    ],
+    campaign: [
+      "coins and gift ribbon bursting from an envelope, orange and gold accents",
+      "percent sign badge surrounded by confetti and sparkles, orange and yellow accents",
+      "treasure chest with wifi icons floating out, amber and dark accents",
+      "calendar with sale tags and money bag, orange and green accents",
+    ],
+    guide: [
+      "open book with wifi signal and arrow pointing right, orange and slate accents",
+      "step-by-step checklist with fiber optic cable, orange and white accents",
+      "smartphone with router icon and glowing connection lines, orange and dark blue accents",
+      "map with route leading to a house with wifi signal, orange and teal accents",
+    ],
+    comparison: [
+      "two routers side by side with comparison arrows, orange and slate accents",
+      "balance scale with wifi symbols on each side, orange and blue accents",
+      "split-screen with colorful speed bars on each half, orange and gray accents",
+      "podium with first place trophy and wifi signal, gold and orange accents",
+    ],
+    trouble: [
+      "wrench and wifi signal with repair sparkles, orange and slate accents",
+      "warning triangle with fiber optic cable and checkmark solution, orange and yellow accents",
+      "router with question mark transforming to checkmark, orange and teal accents",
+      "gear icons and network nodes with glowing fix animation, orange and dark blue accents",
+    ],
+  };
+
+  const defaultThemes = [
+    "fiber optic cables glowing with orange light trails, modern dark and orange accents",
+    "house with wifi signal and connected devices floating around it, orange and slate accents",
+    "network nodes connected by glowing orange lines, dark blue and orange accents",
+    "speedometer and lightning bolt with fiber optic background, orange and white accents",
+  ];
+
+  const themes = categoryThemes[category] ?? defaultThemes;
+  const theme = themes[Math.floor(Math.random() * themes.length)];
+
+  const prompt = `Flat vector illustration style blog thumbnail. Theme: ${theme}. Topic relates to: "${title}". Cute and friendly Japanese illustration style, pastel colors, simple shapes, rounded edges, minimalist white or light gray background gradient. 文字は入れない。Absolutely no text, no letters, no numbers, no characters, no symbols of any kind anywhere in the image. 16:9 wide banner format.`;
+
+  try {
+    const response = await genai.models.generateContent({
+      model: "gemini-3.1-flash-image-preview",
+      contents: prompt,
+      config: { responseModalities: ["TEXT", "IMAGE"] },
+    });
+
+    const parts = response.candidates?.[0]?.content?.parts ?? [];
+    const imagePart = parts.find(
+      (p: { inlineData?: { data?: string; mimeType?: string } }) => p.inlineData?.data
+    );
+    if (!imagePart?.inlineData?.data) {
+      console.log("⚠️  画像データが取得できませんでした");
+      return null;
+    }
+
+    if (!fs.existsSync(THUMBNAILS_DIR)) {
+      fs.mkdirSync(THUMBNAILS_DIR, { recursive: true });
+    }
+    const ext = imagePart.inlineData.mimeType === "image/png" ? "png" : "jpg";
+    const imagePath = path.join(THUMBNAILS_DIR, `${slug}.${ext}`);
+    fs.writeFileSync(imagePath, Buffer.from(imagePart.inlineData.data, "base64"));
+
+    console.log(`   保存完了: public/thumbnails/${slug}.${ext}`);
+    return `/thumbnails/${slug}.${ext}`;
+  } catch (err) {
+    console.log(`⚠️  画像生成エラー（スキップ）: ${(err as Error).message}`);
+    return null;
+  }
+}
+
+// ----------------------------------------------------------------
 // メイン処理
 // ----------------------------------------------------------------
 async function main(): Promise<void> {
@@ -436,6 +530,17 @@ async function main(): Promise<void> {
     article.slug = slug;
     console.log(`⚠️  スラッグが重複したため変更: ${slug}`);
   }
+
+  // Phase 4: サムネイル画像生成
+  const thumbnail = await phase4GenerateThumbnail(
+    article.title as string,
+    article.category as string,
+    slug
+  );
+  if (thumbnail) {
+    article.thumbnail = thumbnail;
+  }
+  console.log();
 
   const outputPath = path.join(ARTICLES_DIR, `${slug}.json`);
   fs.writeFileSync(outputPath, JSON.stringify(article, null, 2), "utf-8");
