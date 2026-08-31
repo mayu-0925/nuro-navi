@@ -32,7 +32,6 @@ export default function Footer() {
                 <li><Link href="/about/" className="hover:text-white transition-colors">このサイトについて</Link></li>
                 <li><Link href="/privacy/" className="hover:text-white transition-colors">プライバシーポリシー</Link></li>
                 <li><Link href="/disclaimer/" className="hover:text-white transition-colors">免責事項</Link></li>
-                <li><Link href="/contact/" className="hover:text-white transition-colors">お問い合わせ</Link></li>
               </ul>
             </div>
           </div>
