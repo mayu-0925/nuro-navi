@@ -5,7 +5,7 @@ on:
     branches:
       - main
   workflow_run:
-    workflows: ["記事自動生成"]
+    workflows: ["記事自動生成", "TOPページ画像生成"]
     types:
       - completed
   workflow_dispatch:
