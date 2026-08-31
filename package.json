@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "generate": "tsx scripts/generate-article.ts",
-    "rewrite": "tsx scripts/rewrite-articles.ts"
+    "rewrite": "tsx scripts/rewrite-articles.ts",
+    "generate:top-images": "tsx scripts/generate-top-images.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

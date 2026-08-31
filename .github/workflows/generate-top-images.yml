@@ -1,0 +1,51 @@
+name: TOPページ画像生成
+
+on:
+  workflow_dispatch:  # 手動実行のみ
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate top page images
+        env:
+          GOOGLE_AI_STUDIO_API_KEY: ${{ secrets.GOOGLE_AI_STUDIO_API_KEY }}
+        run: npx tsx scripts/generate-top-images.ts
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add public/images/
+          if git diff --staged --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git commit -m "feat: TOPページ用画像を生成・更新"
+
+          for i in 1 2 3; do
+            echo "--- push試行 $i/3 ---"
+            git push origin main && exit 0
+            git fetch origin main
+            git rebase origin/main
+            sleep 5
+          done
+          exit 1
