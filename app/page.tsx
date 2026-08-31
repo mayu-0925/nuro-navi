@@ -39,9 +39,6 @@ export default function HomePage() {
   const recentArticles = articles.slice(3);
 
   const heroImage = resolveTopImage("hero.jpg");
-  const categoryImages = Object.fromEntries(
-    CATEGORIES.map((cat) => [cat.slug, resolveTopImage(`cat-${cat.slug}.jpg`)])
-  );
 
   return (
     <>
@@ -111,36 +108,19 @@ export default function HomePage() {
         {/* Category nav with images */}
         <section className="max-w-5xl mx-auto px-4 pb-10">
           <h2 className="text-xl font-black text-slate-900 mb-5">カテゴリから探す</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="flex flex-wrap gap-3">
             {CATEGORIES.map((cat) => {
-              const img = categoryImages[cat.slug];
               const emoji = CATEGORY_EMOJI[cat.slug] ?? "⚡";
               return (
                 <Link
                   key={cat.slug}
                   href={`/blog/?category=${cat.slug}`}
-                  className="group block rounded-xl overflow-hidden border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all"
+                  className="group flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-all"
                 >
-                  <div className="relative w-full aspect-square bg-slate-100">
-                    {img ? (
-                      <Image
-                        src={img}
-                        alt={cat.label}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 640px) 50vw, 20vw"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50">
-                        <span className="text-4xl">{emoji}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="px-3 py-2 text-center">
-                    <p className="text-sm font-black text-slate-800 group-hover:text-orange-600 transition-colors">
-                      {cat.label}
-                    </p>
-                  </div>
+                  <span className="text-xl">{emoji}</span>
+                  <span className="font-bold text-slate-800 group-hover:text-orange-600 transition-colors">
+                    {cat.label}
+                  </span>
                 </Link>
               );
             })}
