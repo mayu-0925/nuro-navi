@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ArticleBody from "@/components/ArticleBody";
 import CTABanner from "@/components/CTABanner";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
-import { getArticleBySlug, getAllSlugs } from "@/lib/articles";
+import Sidebar from "@/components/Sidebar";
+import { getArticleBySlug, getAllSlugs, getAllArticles } from "@/lib/articles";
 import { SITE_NAME, CATEGORIES } from "@/lib/data";
 import { formatDate } from "@/lib/date";
 
@@ -22,6 +24,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${article.title} | ${SITE_NAME}`,
     description: article.description,
+    openGraph: article.thumbnail
+      ? { images: [{ url: article.thumbnail, width: 1200, height: 675 }] }
+      : undefined,
   };
 }
 
@@ -30,51 +35,76 @@ export default async function ArticlePage({ params }: Props) {
   const article = getArticleBySlug(slug);
   if (!article) notFound();
 
+  const allArticles = getAllArticles();
   const categoryLabel = CATEGORIES.find((c) => c.slug === article.category)?.label ?? article.category;
 
   return (
     <>
       <Header />
-      <main className="max-w-3xl mx-auto px-4 py-10 pb-28">
+      <main className="max-w-5xl mx-auto px-4 py-10 pb-28">
         {/* Breadcrumb */}
-        <nav className="text-xs text-slate-400 mb-6 flex items-center gap-1.5">
+        <nav className="text-xs text-slate-400 mb-6 flex items-center gap-1.5 flex-wrap">
           <a href="/" className="hover:text-orange-500">ホーム</a>
           <span>›</span>
           <a href="/blog/" className="hover:text-orange-500">記事一覧</a>
           <span>›</span>
-          <span className="text-slate-600">{article.title}</span>
+          <span className="text-slate-600 line-clamp-1">{article.title}</span>
         </nav>
 
-        {/* Article header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded">
-              {categoryLabel}
-            </span>
-            <time className="text-xs text-slate-400" dateTime={article.publishedAt}>
-              {formatDate(article.publishedAt)}
-            </time>
-            {article.updatedAt && (
-              <>
-                <span className="text-xs text-slate-300">|</span>
-                <time className="text-xs text-slate-400" dateTime={article.updatedAt}>
-                  更新: {formatDate(article.updatedAt)}
-                </time>
-              </>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 items-start">
+          {/* ── Main content ── */}
+          <div>
+            {/* Thumbnail */}
+            {article.thumbnail && (
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-7 bg-slate-100">
+                <Image
+                  src={article.thumbnail}
+                  alt={article.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 720px"
+                  priority
+                />
+              </div>
             )}
+
+            {/* Article header */}
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded">
+                  {categoryLabel}
+                </span>
+                <time className="text-xs text-slate-400" dateTime={article.publishedAt}>
+                  {formatDate(article.publishedAt)}
+                </time>
+                {article.updatedAt && (
+                  <>
+                    <span className="text-xs text-slate-300">|</span>
+                    <time className="text-xs text-slate-400" dateTime={article.updatedAt}>
+                      更新: {formatDate(article.updatedAt)}
+                    </time>
+                  </>
+                )}
+              </div>
+              <h1 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight">
+                {article.title}
+              </h1>
+              <p className="text-slate-600 mt-3 leading-loose">{article.description}</p>
+            </div>
+
+            {/* Article body */}
+            <ArticleBody blocks={article.body} />
+
+            {/* Bottom CTA */}
+            <div className="mt-12">
+              <CTABanner />
+            </div>
           </div>
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight">
-            {article.title}
-          </h1>
-          <p className="text-slate-600 mt-3 leading-loose">{article.description}</p>
-        </div>
 
-        {/* Article body */}
-        <ArticleBody blocks={article.body} />
-
-        {/* Bottom CTA */}
-        <div className="mt-12">
-          <CTABanner />
+          {/* ── Sidebar ── */}
+          <div className="lg:sticky lg:top-20">
+            <Sidebar recentArticles={allArticles} currentSlug={slug} />
+          </div>
         </div>
       </main>
       <Footer />

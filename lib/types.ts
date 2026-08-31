@@ -19,5 +19,6 @@ export type Article = {
   category: string;
   publishedAt: string;
   updatedAt?: string;
+  thumbnail?: string;
   body: ContentBlock[];
 };
