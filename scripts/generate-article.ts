@@ -160,8 +160,16 @@ NURO光専門アフィリエイトサイト向けに、質の高い記事構成�
 - 読者の疑問を論理的な順序で解消する構成
 - 「結論→理由→根拠→補足」の流れ
 - NURO光への申し込みを自然に誘導できる構成
-- 表・グラフは本当に必要な場合のみ（全体で最大2個）
-- cta_bannerは序盤・中盤・末尾の3箇所`;
+- cta_bannerは序盤・中盤・末尾の3箇所
+
+【ブロックタイプ選択の原則】
+- paragraph が基本。文章で説明できる内容は必ず paragraph を使う
+- list は「同格の選択肢・手順以外の列挙」が4個以上あるときだけ使う。「〜の3つが原因です」程度なら paragraph で書く
+- table は「複数の項目を複数の観点で比較する」ときだけ使う。全記事で0〜1個が目安
+- bar_chart は「数値の大小を視覚的に見せる必要がある」ときだけ使う。全記事で0〜1個が目安
+- definition_list は「用語と説明の対応」が明確なときに使う
+- steps は手順（順番に意味がある操作）のときだけ使う
+- blockTypesに list/table/bar_chart を入れるのは、そのセクションでどうしても必要な場合のみ。迷ったら paragraph を選ぶ`;
 
   const userPrompt = `以下のテーマ・キーワードで記事構成を設計してください。
 
@@ -251,9 +259,14 @@ NURO光の技術仕様・料金体系・工事の流れ・他社との速度比�
 - 自然な人間のライターが書いたような、読みやすく簡潔な文体にする
 - 箇条書きの先頭に「・」「•」「-」「STEP X：」などを使わない
 - list の各itemに「**名前**：説明」形式を使わない
-- list は1記事で3〜4箇所まで。1つのitemsは3〜6個に抑える
 - 手順は steps ブロックを使う
 - 「名称：説明文」の対応は definition_list ブロックを使う
+
+【ブロック使用判断（厳守）】
+- list：アウトラインの blockTypes に list が明示されているセクションのみ使用可。1記事で0〜2箇所まで。文章で自然に書けるなら paragraph にする
+- table：アウトラインで tableNeeded が true のときのみ使用可。1記事で0〜1個まで
+- bar_chart：アウトラインで chartNeeded が true のときのみ使用可。1記事で0〜1個まで
+- 上記3つは「入れるかどうか迷ったら入れない」。使用しない記事があってよい
 
 【一次情報・体験談の組み込みルール（必須）】
 - editorial_note ブロックを1〜2箇所挿入する
@@ -322,10 +335,10 @@ ${sectionsDesc}
 【FAQセクション（記事末尾に必ず含める）】
 ${outline.faqQuestions.map((q) => `- ${q}`).join("\n")}
 
-【表・グラフ指示】
-- 表（table）が必要: ${outline.tableNeeded}
-- グラフ（bar_chart）が必要: ${outline.chartNeeded}
-- 使う場合は合計最大2個まで
+【表・グラフ指示（厳守）】
+- 表（table）が必要: ${outline.tableNeeded} → falseなら table ブロックは一切使わない
+- グラフ（bar_chart）が必要: ${outline.chartNeeded} → falseなら bar_chart ブロックは一切使わない
+- 使う場合も合計1個まで（table と bar_chart の両方を使わない）
 
 【内部リンク（関連記事）】
 以下の既存記事の中から、今回の記事テーマと関連性の高いものを2〜3件選び、
@@ -341,6 +354,8 @@ ${existingArticles.slice(0, 30).map((a) => `- slug: "${a.slug}", title: "${a.tit
 
 【出力形式】
 コードブロック(\`\`\`json)で囲むこと。
+paragraph・heading2・editorial_note・cta_banner・related_articles が基本構造。
+list・table・bar_chart・steps・definition_list はアウトラインで明示された場合のみ追加する。
 
 {
   "slug": "${outline.slug}",
@@ -353,16 +368,18 @@ ${existingArticles.slice(0, 30).map((a) => `- slug: "${a.slug}", title: "${a.tit
     { "type": "heading2", "text": "見出し" },
     { "type": "paragraph", "text": "本文（**太字** ==マーカー==を活用）" },
     { "type": "editorial_note", "text": "編集部が実際に〜したところ、〜でした。" },
-    { "type": "list", "items": ["箇条書き"] },
     { "type": "cta_banner", "title": "NURO光で快適な回線環境を", "description": "戸建て最大90,000円キャッシュバック中", "buttonText": "NURO光の公式サイトへ →" },
-    { "type": "steps", "items": ["手順1", "手順2"] },
-    { "type": "definition_list", "items": [{ "term": "名称", "description": "説明文" }] },
-    { "type": "table", "headers": ["項目", "NURO光", "auひかり"], "rows": [["月額料金", "5,200円〜", "4,180円〜"]] },
-    { "type": "bar_chart", "title": "グラフタイトル", "items": [{ "label": "NURO光", "value": 897, "unit": "Mbps", "color": "bg-orange-400" }] },
-    { "type": "heading3", "text": "小見出し" },
     { "type": "related_articles", "articles": [{ "slug": "existing-slug", "title": "既存記事タイトル" }] }
   ]
-}`;
+}
+
+※ 以下はアウトライン指示がある場合のみ追加可（デフォルトでは含めない）
+- { "type": "list", "items": ["項目1", "項目2"] }
+- { "type": "steps", "items": ["手順1", "手順2"] }
+- { "type": "definition_list", "items": [{ "term": "名称", "description": "説明文" }] }
+- { "type": "table", "headers": ["項目", "NURO光"], "rows": [["月額料金", "5,200円〜"]] }
+- { "type": "bar_chart", "title": "タイトル", "items": [{ "label": "NURO光", "value": 897, "unit": "Mbps", "color": "bg-orange-400" }] }
+- { "type": "heading3", "text": "小見出し" }`;
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
